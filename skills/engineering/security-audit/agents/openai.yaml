@@ -1,0 +1,3 @@
+interface:
+  display_name: "Security Audit"
+  short_description: "Automated security and authorization audit of diffs"

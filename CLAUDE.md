@@ -28,6 +28,21 @@ Every skill that dispatches a subagent says to start it with a fresh context win
 
 ## Agent skills
 
+### Production engineering guardrails
+
+These guardrails are strictly binding:
+
+- **Database changes**: Before writing or planning any database schema, column, or migration changes in `/to-tickets` or `/implement`, the agent MUST Call the Skill tool with "safe-migrations" (and "release-safety" if multi-ticket).
+- **Frontend / UI**: Before creating or editing any UI components or styles (`.tsx`, `.jsx`, CSS) in `/implement`, the agent MUST Call the Skill tool with "ui-craft".
+- **Testing seams & concurrency**: When testing seams with multiple adapters or contested state in `/implement` or `/tdd`, the agent MUST Call the Skill tool with "contract-concurrency".
+- **Telemetry & Boundaries**: When implementing API endpoints, webhooks, or handlers in `/implement`, the agent MUST Call the Skill tool with "observability".
+- **Code review**: In `/code-review`, the agent MUST spawn a third parallel subagent for Security, instructing it to Call the Skill tool with "security-audit".
+- **Spec hardening**: When completing `/to-spec`, always instruct the user to run `/red-team` before `/to-tickets`.
+- **Legacy codebase**: On an existing codebase lacking `GLOSSARY.md` or ADRs, instruct the user to run `/brownfield-onboard` before `/grill-with-docs`.
+- **Production emergency**: On active outages or 5xx spikes, instruct the user to run `/incident` to mitigate first before `/diagnosing-bugs`.
+
+See `docs/agents/production-guardrails.md`.
+
 ### Triage labels
 
 Canonical names, unchanged. See `docs/agents/triage-labels.md`. Issues are judged against [`SCOPE.md`](./SCOPE.md).

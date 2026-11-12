@@ -1,0 +1,3 @@
+interface:
+  display_name: "Release Safety"
+  short_description: "Feature flag seams and pre-flight release checks"

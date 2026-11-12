@@ -25,6 +25,8 @@ Ask: "What's the public interface, and which seams should we test?" Give each pr
 
 When the shape of that interface is itself in question (how deep the module is, where the seam belongs, what the interface should expose), call the Skill tool with "codebase-design" for the vocabulary. It is the shared source of the module, interface, depth, seam, adapter, leverage and locality terms, and it is a reference to consult, not a session to run.
 
+When a seam has multiple adapter implementations (such as an in-memory double and a production database adapter) or manages contested state under load, call the Skill tool with "contract-concurrency" to enforce adapter contract parity and run concurrency stress harnesses.
+
 ## Anti-patterns
 
 - **Implementation-coupled**: mocks internal collaborators, tests private methods, or verifies through a side channel (querying the database instead of using the interface). The tell: the test breaks when you refactor but behavior hasn't changed.

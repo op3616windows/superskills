@@ -1,14 +1,15 @@
 ---
 name: code-review
-description: "Review the changes since a fixed point (commit, branch, tag, or merge-base) along two axes: Standards (does the code follow this repo's documented coding standards?) and Spec (does the code match what the originating issue/spec asked for?). Runs both reviews in parallel sub-agents and reports them side by side. Use when the user wants to review a branch, a PR, work-in-progress changes, or asks to \"review since X\"."
+description: "Review the changes since a fixed point (commit, branch, tag, or merge-base) along three axes: Standards (does the code follow this repo's documented coding standards?), Spec (does the code match what the originating issue/spec asked for?), and Security (does the code protect authorization, concurrency, DTOs, and input validation?). Runs all reviews in parallel sub-agents and reports them side by side. Use when the user wants to review a branch, a PR, work-in-progress changes, or asks to \"review since X\"."
 ---
 
-Two-axis review of the diff between `HEAD` and a fixed point the user supplies:
+Three-axis review of the diff between `HEAD` and a fixed point the user supplies:
 
 - **Standards**: does the code conform to this repo's documented coding standards?
 - **Spec**: does the code faithfully implement the originating issue / spec?
+- **Security**: does the code protect against authorization leaks, race conditions, data exposure, and unvalidated inputs?
 
-Both axes run as **parallel sub-agents** so they don't pollute each other's context, then this skill aggregates their findings. Start every sub-agent with a fresh context window.
+All three axes run as **parallel sub-agents** so they don't pollute each other's context, then this skill aggregates their findings. Start every sub-agent with a fresh context window.
 
 The issue tracker should have been provided to you. If not, tell the user to run `/setup-matt-pocock-skills`.
 
@@ -55,9 +56,9 @@ Each smell reads *what it is* → *how to fix*; match it against the diff:
 - **Middle Man**: a class or function that mostly just delegates onward. → cut it, call the real target direct.
 - **Refused Bequest**: a subclass or implementer that ignores or overrides most of what it inherits. → drop the inheritance, use composition.
 
-### 4. Spawn both sub-agents in parallel
+### 4. Spawn all sub-agents in parallel
 
-Issue both sub-agent calls together, in the foreground, and aggregate the reports they return.
+Issue all three sub-agent calls together, in the foreground, and aggregate the reports they return. Start every sub-agent with a fresh context window.
 
 **Standards sub-agent prompt** should include:
 
@@ -73,17 +74,29 @@ Issue both sub-agent calls together, in the foreground, and aggregate the report
 
 If the spec is missing, skip the Spec sub-agent and note this in the final report.
 
+**Security sub-agent prompt** should include:
+
+- The diff command and commit list.
+- An explicit instruction to Call the Skill tool with "security-audit" to load the security inspection rules.
+- The full audit checklist pasted in the brief:
+  "1. Authorization & AuthZ: verify tenant and user ownership on every database query and entrypoint (no post-fetch memory checks).
+   2. Concurrency & Locking: verify SELECT ... FOR UPDATE or version checks on balance/inventory mutations.
+   3. DTO & Data Leakage: ensure passwords, tokens, and internal fields are stripped before serialization.
+   4. Input Validation: ensure strict schema validation (e.g. Zod strict) and parameterized queries.
+   Report findings categorised as Critical, High, or Medium with file paths, line numbers, and fixes. Under 400 words."
+
 ### 5. Aggregate
 
-Present the two reports under `## Standards` and `## Spec` headings, verbatim or lightly cleaned. Do **not** merge or rerank findings, because the two axes are deliberately separate (see _Why two axes_).
+Present the reports under `## Standards`, `## Spec`, and `## Security` headings, verbatim or lightly cleaned. Do **not** merge or rerank findings, because the three axes are deliberately separate (see _Why three axes_).
 
 End with a one-line summary: total findings per axis, and the worst issue _within each axis_ (if any). Don't pick a single winner across axes: that's the reranking the separation exists to prevent.
 
-## Why two axes
+## Why three axes
 
-A change can pass one axis and fail the other:
+A change can pass one axis and fail another:
 
-- Code that follows every standard but implements the wrong thing → **Standards pass, Spec fail.**
-- Code that does exactly what the issue asked but breaks the project's conventions → **Spec pass, Standards fail.**
+- Code that follows every standard but implements the wrong thing: **Standards pass, Spec fail.**
+- Code that does exactly what the issue asked but breaks project conventions: **Spec pass, Standards fail.**
+- Code that satisfies both standards and spec but introduces a double-spend race condition: **Standards pass, Spec pass, Security fail.**
 
-Reporting them separately stops one axis from masking the other.
+Reporting them separately stops one axis from masking the others.

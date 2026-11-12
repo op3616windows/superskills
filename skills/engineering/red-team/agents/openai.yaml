@@ -1,0 +1,5 @@
+interface:
+  display_name: "Red Team"
+  short_description: "Adversarial security attack simulation on specs before ticketing"
+policy:
+  allow_implicit_invocation: false

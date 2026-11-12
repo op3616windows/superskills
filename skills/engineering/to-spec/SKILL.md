@@ -73,3 +73,8 @@ A description of the things that are out of scope for this spec.
 Any further notes about the feature.
 
 </spec-template>
+
+### 4. Next Step Handoff
+
+Once the spec is published:
+Tell the user to run `/red-team` next to probe the specification for race conditions, authorization bypasses, and business vulnerabilities before proceeding to `/to-tickets`.

@@ -1,0 +1,5 @@
+interface:
+  display_name: "Incident"
+  short_description: "Production incident response and rapid mitigation"
+policy:
+  allow_implicit_invocation: false

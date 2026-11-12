@@ -1,6 +1,6 @@
 ---
 name: setup-matt-pocock-skills
-description: "Configure this repo for the engineering skills: set up its issue tracker, triage label vocabulary, and domain doc layout. Run once before first use of the other engineering skills."
+description: "Configure this repo for the engineering skills: set up its issue tracker, triage label vocabulary, domain doc layout, and production engineering guardrails. Run once before first use of the other engineering skills."
 disable-model-invocation: true
 ---
 
@@ -11,6 +11,7 @@ Scaffold the per-repo configuration that the engineering skills assume:
 - **Issue tracker**: where issues live (GitHub by default; local markdown is also supported out of the box)
 - **Triage labels**: the strings used for the five canonical triage roles
 - **Domain docs**: where `GLOSSARY.md` and ADRs live, and the consumer rules for reading them
+- **Production engineering guardrails**: strictly binding rules governing database schema evolution, UI craft, contract concurrency, observability, security audit, red teaming, and release safety
 
 This is a prompt-driven skill, not a deterministic script. Explore, present what you found, confirm with the user, then write.
 
@@ -24,7 +25,7 @@ Look at the current repo to understand its starting state. Read whatever exists;
 - `AGENTS.md` and `CLAUDE.md` at the repo root: does either exist? Is there already an `## Agent skills` section in either?
 - `GLOSSARY.md` and `GLOSSARY-MAP.md` at the repo root, and the legacy `CONTEXT.md` / `CONTEXT-MAP.md`. If a legacy file exists, offer to `git mv` it to its `GLOSSARY` name and rewrite those names in `docs/agents/domain.md`.
 - `docs/adr/` and any `src/*/docs/adr/` directories
-- `docs/agents/`: does this skill's prior output already exist?
+- `docs/agents/`: does this skill's prior output already exist (`issue-tracker.md`, `domain.md`, `production-guardrails.md`)?
 - `.scratch/`: a sign that a local-markdown issue tracker convention is already in use
 - Is the `triage` skill installed? (a `triage` skill folder alongside this one, or `triage` in your available skills.) This decides whether Section B runs at all.
 - Monorepo signals: a `pnpm-workspace.yaml`, a `workspaces` field in `package.json`, or a populated `packages/*` with its own `src/`. These are present only in a genuinely large multi-package repo; their absence means single-context, which is almost every repo.
@@ -62,12 +63,18 @@ The defaults are the five canonical roles, each label string equal to its name: 
 
 Offer **multi-context** (a root `GLOSSARY-MAP.md` pointing to per-context `GLOSSARY.md` files) only when exploration found monorepo signals. Then confirm which layout they want.
 
+**Section D: Production engineering guardrails.** Ask:
+
+> Do you want to configure strictly binding production engineering guardrails for agents? (recommended: **yes**)
+
+On **yes**, install the standard production engineering guardrails governing safe database migrations, UI craft, contract concurrency, observability, security review, red teaming, and release safety.
+
 ### 3. Confirm and edit
 
 Show the user a draft of:
 
 - The `## Agent skills` block to add to whichever of `CLAUDE.md` / `AGENTS.md` is being edited (see step 4 for selection rules)
-- The contents of `docs/agents/issue-tracker.md`, `docs/agents/domain.md`, and `docs/agents/triage-labels.md` (the last only when `triage` is installed)
+- The contents of `docs/agents/issue-tracker.md`, `docs/agents/domain.md`, `docs/agents/production-guardrails.md`, and `docs/agents/triage-labels.md` (the last only when `triage` is installed)
 
 Let them edit before writing.
 
@@ -87,6 +94,21 @@ The block:
 
 ```markdown
 ## Agent skills
+
+### Production engineering guardrails
+
+These guardrails are strictly binding:
+
+- **Database changes**: Before writing or planning any database schema, column, or migration changes in `/to-tickets` or `/implement`, the agent MUST Call the Skill tool with "safe-migrations" (and "release-safety" if multi-ticket).
+- **Frontend / UI**: Before creating or editing any UI components or styles (`.tsx`, `.jsx`, CSS) in `/implement`, the agent MUST Call the Skill tool with "ui-craft".
+- **Testing seams & concurrency**: When testing seams with multiple adapters or contested state in `/implement` or `/tdd`, the agent MUST Call the Skill tool with "contract-concurrency".
+- **Telemetry & Boundaries**: When implementing API endpoints, webhooks, or handlers in `/implement`, the agent MUST Call the Skill tool with "observability".
+- **Code review**: In `/code-review`, the agent MUST spawn a third parallel subagent for Security, instructing it to Call the Skill tool with "security-audit".
+- **Spec hardening**: When completing `/to-spec`, always instruct the user to run `/red-team` before `/to-tickets`.
+- **Legacy codebase**: On an existing codebase lacking `GLOSSARY.md` or ADRs, instruct the user to run `/brownfield-onboard` before `/grill-with-docs`.
+- **Production emergency**: On active outages or 5xx spikes, instruct the user to run `/incident` to mitigate first before `/diagnosing-bugs`.
+
+See `docs/agents/production-guardrails.md`.
 
 ### Issue tracker
 
@@ -112,6 +134,7 @@ Then write the docs files using the seed templates in this skill folder as a sta
 - [issue-tracker-local.md](./issue-tracker-local.md): local-markdown issue tracker
 - [triage-labels.md](./triage-labels.md): label mapping (only if `triage` is installed)
 - [domain.md](./domain.md): domain doc consumer rules + layout
+- [production-guardrails.md](./production-guardrails.md): binding engineering guardrails for agents
 
 For "other" issue trackers, write `docs/agents/issue-tracker.md` from scratch using the user's description.
 

@@ -1,0 +1,3 @@
+interface:
+  display_name: "Contract Concurrency"
+  short_description: "Adapter contract parity and concurrency stress testing"

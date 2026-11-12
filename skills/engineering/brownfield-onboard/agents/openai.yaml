@@ -1,0 +1,5 @@
+interface:
+  display_name: "Brownfield Onboard"
+  short_description: "Bootstrap glossary and ADRs from legacy codebase"
+policy:
+  allow_implicit_invocation: false
