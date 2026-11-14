@@ -41,6 +41,7 @@
     "./skills/engineering/wizard",
     "./skills/engineering/brownfield-onboard",
     "./skills/engineering/contract-concurrency",
+    "./skills/engineering/e2e-tracer",
     "./skills/engineering/incident",
     "./skills/engineering/observability",
     "./skills/engineering/red-team",

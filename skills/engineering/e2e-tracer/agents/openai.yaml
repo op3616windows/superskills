@@ -1,0 +1,3 @@
+interface:
+  display_name: "E2E Tracer"
+  short_description: "Automate ticket Demo Path into lean Playwright tracer-bullet tests"

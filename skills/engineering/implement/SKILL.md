@@ -26,9 +26,16 @@ Before writing or editing any code or tests, inspect what layers this ticket tou
 1. Drive red-green-refactor loop at pre-agreed seams.
 2. Run typechecking regularly, single test files regularly, and the full test suite once at the end.
 
-### 3. Review and Commit
+### 3. Automated End-to-End Verification
 
-Once code passes all tests:
+Once unit tests and typechecking are green:
+1. Call the Skill tool with "e2e-tracer" to convert the ticket's "Demo path" into exactly one lean, deterministic Playwright tracer-bullet test.
+2. Run the test against the live vertical stack to confirm UI wiring, serialization boundaries, auth state, and database persistence.
+3. Verify that the browser console reports zero unhandled errors or React hydration mismatches.
+
+### 4. Review and Commit
+
+Once all tests pass (unit, contract, and e2e tracer):
 1. Call the Skill tool with "code-review" to execute the three-axis review (Standards, Spec, and Security).
 2. Resolve any Critical or High findings.
 3. Commit your work to the current branch.

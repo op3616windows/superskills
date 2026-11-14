@@ -40,6 +40,7 @@ These guardrails are strictly binding:
 - **Spec hardening**: When completing `/to-spec`, always instruct the user to run `/red-team` before `/to-tickets`.
 - **Legacy codebase**: On an existing codebase lacking `GLOSSARY.md` or ADRs, instruct the user to run `/brownfield-onboard` before `/grill-with-docs`.
 - **Production emergency**: On active outages or 5xx spikes, instruct the user to run `/incident` to mitigate first before `/diagnosing-bugs`.
+- **End-to-End tracer verification**: At the end of `/implement` (after `/tdd` and `typecheck` pass), the agent MUST Call the Skill tool with "e2e-tracer" to automate the ticket's `Demo path`.
 
 See `docs/agents/production-guardrails.md`.
 

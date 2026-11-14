@@ -73,3 +73,14 @@ On active outages, critical regressions, or 5xx spikes:
 
 - Instruct the user to run `/incident` to mitigate first before `/diagnosing-bugs`.
 - Adheres to Mitigate First, Investigate Later: halts impact via feature flag disable or rollback, gathers production evidence, and hands off to `diagnosing-bugs` for local reproduction.
+
+## 10. Automated End-to-End Tracer Verification (`e2e-tracer`)
+
+At the conclusion of ticket implementation in `/implement` (after `/tdd` and `typecheck` pass, before `/code-review`):
+
+- The agent MUST Call the Skill tool with "e2e-tracer".
+- Automates the ticket's `Demo path` into exactly one lean, deterministic Playwright test verifying the vertical stack (UI, auth, API, real database).
+- Combinatorial business logic in E2E is forbidden: all permutations and edge cases belong in `/tdd` unit tests.
+- Mandatory semantic user-facing locators (`getByRole`, `getByLabel`, `getByPlaceholder`, `getByText`); never use CSS hierarchy or arbitrary selectors.
+- State initialization must use direct API/DB seeding and `storageState` auth (never UI clicking).
+- Strict zero-sleep discipline (no `waitForTimeout`) with immediate failure on uncaught page exceptions or React hydration mismatches.

@@ -27,7 +27,7 @@ The route most work travels. You have an idea and want it built.
      - **`/implement-spec`** for the whole spec in one run. It reads the tickets as a **task graph**, runs implementer subagents across the ready **frontier** in parallel, and lands everything on one **integration branch**. Reach for it when you'd rather orchestrate the build than drive each ticket yourself.
    - **No** → **`/implement`** right here, in the same context window.
 
-   Either way, the code gets built by driving **`/tdd`** (extending with **`contract-concurrency`** when testing seams with multiple adapters or contested state), adhering to **`ui-craft`** for complete UI states, adding **`observability`** at boundaries, and closing out with **`/code-review`**, a three-axis review (Standards + Spec + Security via **`security-audit`**) of the diff. `/implement` runs these per ticket; `/implement-spec`'s implementers each drive `/tdd`, and it runs one `/code-review` over the integration branch. Reach for **`/tdd`** on its own when you just want to build a concrete behaviour test-first without a full spec, and **`/code-review`** on its own whenever you want to review a branch or PR against a fixed point.
+   Either way, the code gets built by driving **`/tdd`** (extending with **`contract-concurrency`** when testing seams with multiple adapters or contested state), adhering to **`ui-craft`** for complete UI states, adding **`observability`** at boundaries, verifying the vertical slice via automated Playwright tracer bullets with **`e2e-tracer`**, and closing out with **`/code-review`**, a three-axis review (Standards + Spec + Security via **`security-audit`**) of the diff. `/implement` runs these per ticket; `/implement-spec`'s implementers each drive `/tdd` and `/e2e-tracer`, and it runs one `/code-review` over the integration branch. Reach for **`/tdd`** on its own when you just want to build a concrete behaviour test-first without a full spec, and **`/code-review`** on its own whenever you want to review a branch or PR against a fixed point.
 
    When the work goes up as a pull request, **`/pr`** shapes the body: the smallest visual that shows the change, before/after evidence that it works, and a one-way or two-way door call (reinforced by **`release-safety`** pre-flight checks). It's model-invoked, so the agent reaches for it whenever it writes a PR.
 
@@ -35,7 +35,7 @@ The route most work travels. You have an idea and want it built.
 
 ### Context hygiene
 
-Keep steps 1–3 in **one unbroken context window** (don't compact or clear until after `/to-tickets`) so the grilling, spec, and tickets all build on the same thinking. Each `/implement` then starts fresh, working from the ticket. Run `/retro` in the session it's looking back on, before you clear; after clearing, point it at that session's log instead.
+Keep steps 1 to 3 in **one unbroken context window** (don't compact or clear until after `/to-tickets`) so the grilling, spec, and tickets all build on the same thinking. Each `/implement` then starts fresh, working from the ticket. Run `/retro` in the session it's looking back on, before you clear; after clearing, point it at that session's log instead.
 
 The limit on this is the **[smart zone](https://www.aihero.dev/ai-coding-dictionary/smart-zone)**: the window (~150k tokens on state-of-the-art models) within which the model still reasons sharply. If a session approaches it before `/to-tickets`, don't push on degraded; `/compact` at the nearest phase boundary and carry on (see Phase boundaries).
 

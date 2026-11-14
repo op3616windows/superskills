@@ -35,6 +35,7 @@ Break the work into **tracer bullet** tickets.
 
 - Each slice cuts a narrow but COMPLETE path through every layer (schema, API, UI, tests): vertical, NOT a horizontal slice of one layer
 - A completed slice is demoable or verifiable on its own
+- Each slice declares a concrete Demo path (the end-to-end user journey) that "e2e-tracer" can automate into a browser test
 - Each slice is sized to fit in a single fresh context window
 - Any prefactoring should be done first
 
@@ -84,6 +85,8 @@ Do NOT close or modify any parent issue.
 - [ ] Acceptance criterion 1
 - [ ] Acceptance criterion 2
 
+**Demo path:** step-by-step user interaction verifying the full vertical slice end-to-end (e.g. Navigate to /lots/123 -> enter bid -> submit -> UI shows winning state).
+
 </local-ticket-template>
 
 <issue-template>
@@ -100,6 +103,10 @@ The end-to-end behaviour this ticket makes work, from the user's perspective, no
 
 - [ ] Criterion 1
 - [ ] Criterion 2
+
+## Demo path
+
+Step-by-step user interaction verifying the full vertical slice end-to-end (e.g. Navigate to /lots/123 -> enter bid -> submit -> UI shows winning state).
 
 ## Blocked by
 

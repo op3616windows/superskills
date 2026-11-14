@@ -75,12 +75,13 @@ const NEW_SKILLS = [
   "observability",
   "incident",
   "release-safety",
+  "e2e-tracer",
 ];
 
 const USER_INVOKED_SKILLS = ["brownfield-onboard", "red-team", "incident"];
 
 describe("SUITE 1: Structural & Integrity Conformance", () => {
-  it("1.1 Plugin Manifest should register all 9 new skills", () => {
+  it("1.1 Plugin Manifest should register all 10 new skills", () => {
     const pluginPath = path.join(REPO_ROOT, ".claude-plugin/plugin.json");
     assert(fs.existsSync(pluginPath), "plugin.json must exist");
     const plugin = JSON.parse(fs.readFileSync(pluginPath, "utf-8"));
@@ -307,6 +308,44 @@ describe("SUITE 2: Behavioral & Constraint Engines", () => {
     assert(templateContent.includes("release-safety"));
     assert(templateContent.includes("brownfield-onboard"));
     assert(templateContent.includes("incident"));
+    assert(templateContent.includes("e2e-tracer"));
+  });
+
+  it("2.7 e2e-tracer rule engine enforces 4 iron rules (semantic locators, zero-sleep, error trapping, seeding)", () => {
+    function auditE2eTracerTest(testSource) {
+      const violations = [];
+      if (testSource.includes("waitForTimeout")) {
+        violations.push("FORBIDDEN_SLEEP");
+      }
+      if (testSource.match(/page\.locator\(['"][^'"]*>[^'"]*['"]\)/) || testSource.includes(":nth-child")) {
+        violations.push("FORBIDDEN_STRUCTURAL_SELECTOR");
+      }
+      if (!testSource.includes("pageerror") && !testSource.includes("Hydration failed")) {
+        violations.push("MISSING_ERROR_LISTENER");
+      }
+      if (testSource.includes("page.goto('/register')") || testSource.includes("page.goto('/login')")) {
+        violations.push("FORBIDDEN_UI_STATE_SETUP");
+      }
+      return { isValid: violations.length === 0, violations };
+    }
+
+    const badTest = `
+      await page.goto('/login');
+      await page.locator('div.flex > button:nth-child(2)').click();
+      await page.waitForTimeout(2000);
+    `;
+    const badResult = auditE2eTracerTest(badTest);
+    assert.strictEqual(badResult.isValid, false);
+    assert.strictEqual(badResult.violations.length, 4);
+
+    const goodTest = `
+      page.on('pageerror', err => { throw err; });
+      const lot = await seedLot();
+      await page.getByRole('button', { name: 'Bid' }).click();
+      await expect(page.getByText('Success')).toBeVisible();
+    `;
+    const goodResult = auditE2eTracerTest(goodTest);
+    assert.strictEqual(goodResult.isValid, true);
   });
 });
 
@@ -352,5 +391,80 @@ describe("SUITE 3: Executable Concurrency & Contract Test (contract-concurrency)
 
     assert.strictEqual(successCount, 5);
     assert.strictEqual(finalBalance, 0);
+  });
+});
+
+describe("SUITE 4: Executable Tracer-Bullet Simulation (e2e-tracer)", () => {
+  it("4.1 Deterministic multi-context execution with error trapping and semantic assertions", async () => {
+    // Simulated vertical slice: in-memory state engine + multi-context client view
+    const simulatedDatabase = {
+      lot: { id: "lot-101", currentPrice: 50_000_000, winningUser: "system", ceilingA: 0 },
+    };
+
+    const clientViews = {
+      pageA: { visibleText: [], errors: [] },
+      pageB: { visibleText: [], errors: [] },
+    };
+
+    function trapPageError(pageKey, errorMessage) {
+      clientViews[pageKey].errors.push(errorMessage);
+    }
+
+    // Direct DB seed helper (Rule 3)
+    function seedLot(startPrice) {
+      simulatedDatabase.lot.currentPrice = startPrice;
+    }
+
+    // Action: User A sets ceiling 100M via role action (Rule 2)
+    function placeProxyCeiling(pageKey, userId, ceiling) {
+      if (ceiling < simulatedDatabase.lot.currentPrice) {
+        throw new Error("Ceiling cannot be lower than current price");
+      }
+      simulatedDatabase.lot.ceilingA = ceiling;
+      simulatedDatabase.lot.winningUser = userId;
+      simulatedDatabase.lot.currentPrice += 5_000_000;
+      updateViews();
+    }
+
+    // Action: User B places standard bid 70M
+    function placeStandardBid(pageKey, userId, amount) {
+      if (amount <= simulatedDatabase.lot.currentPrice) {
+        throw new Error("Bid must exceed current price");
+      }
+      if (simulatedDatabase.lot.ceilingA >= amount + 5_000_000) {
+        simulatedDatabase.lot.currentPrice = amount + 5_000_000;
+        simulatedDatabase.lot.winningUser = "buyer-a";
+      } else {
+        simulatedDatabase.lot.currentPrice = amount;
+        simulatedDatabase.lot.winningUser = userId;
+      }
+      updateViews();
+    }
+
+    function updateViews() {
+      const priceText = `Current price: ${simulatedDatabase.lot.currentPrice.toLocaleString()}`;
+      clientViews.pageA.visibleText = [priceText, simulatedDatabase.lot.winningUser === "buyer-a" ? "Winning" : "Outbid"];
+      clientViews.pageB.visibleText = [priceText, simulatedDatabase.lot.winningUser === "buyer-b" ? "Winning" : "Outbid"];
+    }
+
+    // Step 1: Seed
+    seedLot(50_000_000);
+    updateViews();
+
+    // Step 2: Buyer A sets ceiling
+    placeProxyCeiling("pageA", "buyer-a", 100_000_000);
+    assert(clientViews.pageA.visibleText.includes("Current price: 55,000,000"));
+    assert(clientViews.pageA.visibleText.includes("Winning"));
+
+    // Step 3: Buyer B bids 70M
+    placeStandardBid("pageB", "buyer-b", 70_000_000);
+
+    // Step 4: Rule 4 assertions (web-first state check, zero errors)
+    assert(clientViews.pageA.visibleText.includes("Current price: 75,000,000"));
+    assert(clientViews.pageA.visibleText.includes("Winning"));
+    assert(clientViews.pageB.visibleText.includes("Current price: 75,000,000"));
+    assert(clientViews.pageB.visibleText.includes("Outbid"));
+    assert.strictEqual(clientViews.pageA.errors.length, 0);
+    assert.strictEqual(clientViews.pageB.errors.length, 0);
   });
 });

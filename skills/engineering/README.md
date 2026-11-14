@@ -30,6 +30,7 @@ Model- or user-reachable (rich trigger phrasing so the model can reach for them)
 - **[research](./research/SKILL.md)**: Investigate a question against high-trust primary sources and capture the findings as a cited Markdown file in the repo, run as a background agent.
 - **[tdd](./tdd/SKILL.md)**: Test-driven development with a red-green-refactor loop. Builds features or fixes bugs one vertical slice at a time.
 - **[contract-concurrency](./contract-concurrency/SKILL.md)**: Adapter contract parity test suites across implementations and concurrency stress harnesses for contested mutations.
+- **[e2e-tracer](./e2e-tracer/SKILL.md)**: Automate ticket Demo Paths into lean Playwright tracer-bullet tests, verifying vertical wiring across UI, auth, API, and database.
 - **[domain-modeling](./domain-modeling/SKILL.md)**: Actively build and sharpen a project's domain model by challenging terms, stress-testing with scenarios, and updating `GLOSSARY.md` and ADRs inline.
 - **[codebase-design](./codebase-design/SKILL.md)**: Shared discipline and vocabulary for designing deep modules: small interfaces, clean seams, testable through the interface.
 - **[ui-craft](./ui-craft/SKILL.md)**: Frontend visual craft, 5-state completeness (loading skeleton, empty, error, optimistic, populated), and WCAG AA standards.
