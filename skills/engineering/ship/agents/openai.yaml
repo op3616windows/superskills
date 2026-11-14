@@ -1,0 +1,5 @@
+interface:
+  display_name: "Ship"
+  short_description: "Push branch, open or update PR, link tickets, and route next steps"
+policy:
+  allow_implicit_invocation: false

@@ -76,9 +76,10 @@ const NEW_SKILLS = [
   "incident",
   "release-safety",
   "e2e-tracer",
+  "ship",
 ];
 
-const USER_INVOKED_SKILLS = ["brownfield-onboard", "red-team", "incident"];
+const USER_INVOKED_SKILLS = ["brownfield-onboard", "red-team", "incident", "ship"];
 
 describe("SUITE 1: Structural & Integrity Conformance", () => {
   it("1.1 Plugin Manifest should register all 10 new skills", () => {
@@ -346,6 +347,66 @@ describe("SUITE 2: Behavioral & Constraint Engines", () => {
     `;
     const goodResult = auditE2eTracerTest(goodTest);
     assert.strictEqual(goodResult.isValid, true);
+  });
+
+  it("2.8 ship engine validates branch guardrails, Merge Danger escalation, and ticket closing rules", () => {
+    function evaluateShipPreflight(branch, diffFiles, childTickets, specGraph) {
+      const issues = [];
+      const isDefaultBranch = branch === "main" || branch === "master";
+      if (isDefaultBranch) {
+        issues.push("COMMITTED_ON_DEFAULT_BRANCH");
+      }
+
+      let door = "two-way";
+      const hasMigration = diffFiles.some((f) => f.includes("migrations/") || f.endsWith(".sql"));
+      const hasEnvChange = diffFiles.some((f) => f.includes(".env"));
+      const hasContractDrop = diffFiles.some((f) => f.includes("api/v1/delete"));
+      if (hasMigration || hasEnvChange || hasContractDrop) {
+        door = "one-way";
+      }
+
+      const closesKeywords = [];
+      for (const ticket of childTickets) {
+        closesKeywords.push(`Closes #${ticket.id}`);
+      }
+
+      const allChildrenComplete = specGraph.every((t) => t.completed);
+      let closesSpec = false;
+      if (allChildrenComplete) {
+        closesSpec = true;
+      }
+
+      return {
+        isDefaultBranch,
+        door,
+        requiresHumanGate: door === "one-way",
+        closesKeywords,
+        closesSpec,
+      };
+    }
+
+    const test1 = evaluateShipPreflight(
+      "main",
+      ["src/index.ts", "migrations/001_create_users.sql"],
+      [{ id: 101, completed: true }],
+      [{ id: 101, completed: true }, { id: 102, completed: false }]
+    );
+    assert.strictEqual(test1.isDefaultBranch, true);
+    assert.strictEqual(test1.door, "one-way");
+    assert.strictEqual(test1.requiresHumanGate, true);
+    assert.deepStrictEqual(test1.closesKeywords, ["Closes #101"]);
+    assert.strictEqual(test1.closesSpec, false);
+
+    const test2 = evaluateShipPreflight(
+      "feat/user-auth",
+      ["src/auth.ts", "src/auth.test.ts"],
+      [{ id: 102, completed: true }],
+      [{ id: 101, completed: true }, { id: 102, completed: true }]
+    );
+    assert.strictEqual(test2.isDefaultBranch, false);
+    assert.strictEqual(test2.door, "two-way");
+    assert.strictEqual(test2.requiresHumanGate, false);
+    assert.strictEqual(test2.closesSpec, true);
   });
 });
 

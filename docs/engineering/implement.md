@@ -58,7 +58,7 @@ Not with `/implement`: one invocation, one ticket. For a whole spec in one run, 
 
 **Can it open a pull request instead of committing?**
 
-Not built in. It commits straight to the current branch. Several people find this too eager, because the code lands before they can verify it works. There is no configuration flag and no PR mode. People override it in the invocation ("commit to a branch and open a PR") or by editing their local copy of the skill. When the agent does write the PR, [pr](https://aihero.dev/skills-pr) shapes its body.
+Not built in. It commits straight to the current branch. Several people find this too eager, because the code lands before they can verify it works. There is no configuration flag and no PR mode. To push the branch, open or update the PR with [pr](https://aihero.dev/skills-pr), and reconcile tickets, run [ship](https://aihero.dev/skills-ship) after implementing.
 
 **`code-review` says it cannot see my changes.**
 
@@ -87,7 +87,7 @@ The agent resolved `#2` against another numbered list in context, such as a todo
 `implement` is the build step of the main chain:
 
 ```txt
-grill-with-docs → to-spec → to-tickets → implement → code-review → retro
+grill-with-docs → to-spec → to-tickets → implement → code-review → ship → retro
 ```
 
 Its neighbours are [to-tickets](https://aihero.dev/skills-to-tickets), which produces the tickets it consumes and declares the blocking edges that decide their order; [tdd](https://aihero.dev/skills-tdd), which it drives internally at each seam; and [code-review](https://aihero.dev/skills-code-review), which it runs before committing. It sits downstream of the planning skills and trusts them. It does not re-validate the shape of what it was handed, so a badly-structured map or a horizontally-layered ticket gets built as written.
